@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>12-Month Expense Tracker</title>
+<style>
+   /* Same styling as before */
+ .month {
+  background-size: cover;
+  background-position: center;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+  background: linear-gradient(to bottom right, #32696b, #ffb3d9);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.container {
+  width: 90%;
+  max-width: 1200px;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  transition: transform 0.3s ease-in-out, opacity 0.5s ease;
+}
+
+h1 {
+  color: #ffdd59;
+  transition: opacity 0.5s ease-in-out;
+}
+
+button {
+  background-color: #ffdd59;
+  color: black;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.3s ease, background-color 0.3s, box-shadow 0.3s ease;
+}
+
+button:hover {
+  transform: scale(1.1);
+  background-color: #ffd700;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+input {
+  width: 80%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+input:focus {
+  transform: scale(1.05);
+  border-color: #ffdd59;
+}
+
+.hidden {
+  display: none;
+}
+
+.calendar-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns */
+  grid-gap: 20px;
+  width: 100%;
+  padding: 20px;
+  justify-items: center;
+}
+
+.month {
+  background: #ffb3d9;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.month:hover {
+  transform: scale(1.1);
+  background-color: #ff80b3;
+}
+
+.month h3 {
+  color: #ffdd59;
+  font-size: 24px;
+}
+
+.month .days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr); /* 7 days per row */
+  grid-gap: 5px;
+  margin-top: 10px;
+}
+
+.month .days button {
+  background-color: #ffdd59;
+  color: black;
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.month .days button:hover {
+  transform: scale(1.1);
+  background-color: #ffd700;
+}
+
+.month .total {
+  margin-top: 10px;
+  color: white;
+  font-size: 16px;
+}
+
+.popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: 30px;
+  border-radius: 10px;
+  color: white;
+  width: 80%;
+  max-width: 400px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s, opacity 0.3s ease-in-out, transform 0.3s ease;
+}
+
+.popup.show {
+  visibility: visible;
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+}
+
+th, td {
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #fff;
+}
+
+th {
+  background-color: #ffdd59;
+}
+
+.admin-table {
+  margin: 10px;
+  padding: 20px;
+  background: rgba(207, 2, 2, 0.1);
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+</style>
+</head>
+<body>
+
+  <div class="container" id="set-limit-section">
+    <h1>Set Monthly Limit</h1>
+    <input type="number" id="limit-input" placeholder="Enter your monthly limit (₹)" required autocomplete="off"/>
+    <button id="set-limit-button">Set Limit</button>
+  </div>
+
+  <div class="container hidden" id="calendar-section">
+    <h1>2025 Calendar</h1>
+    <input type="text" id="admin-code" placeholder="Enter Admin Code" required autocomplete="off"/>
+    <button id="admin-access-button"> Dashboard</button>
+    <div class="calendar-container" id="calendar-container"></div>
+  </div>
+
+  <div class="popup" id="expense-popup">
+    <h3>Add Expense</h3>
+    <input type="text" id="expense-reason" placeholder="Reason for expense" required autocomplete="off" />
+    <input type="number" id="expense-amount" placeholder="Expense amount (₹)" required autocomplete="off"/>
+    <button id="submit-expense">Add Expense</button>
+    <button id="close-popup">Close</button>
+  </div>
+
+  <div class="container hidden" id="admin-dashboard">
+    <h1>Dashboard</h1>
+    <div id="admin-table-container"></div>
+  </div>
+  <script>
+    const months = [
+  { name: "January", days: 31 },
+  { name: "February", days: 28 },
+  { name: "March", days: 31 },
+  { name: "April", days: 30 },
+  { name: "May", days: 31 },
+  { name: "June", days: 30 },
+  { name: "July", days: 31 },
+  { name: "August", days: 31 },
+  { name: "September", days: 30 },
+  { name: "October", days: 31 },
+  { name: "November", days: 30 },
+  { name: "December", days: 31 }
+];
+
+let setLimit = 0;
+let expenses = {};
+const adminCode = "kavipriya" ; // Admin code for accessing the dashboard
+
+// Check sessionStorage for saved data
+if (sessionStorage.getItem("setLimit")) {
+  setLimit = parseFloat(sessionStorage.getItem("setLimit"));
+  expenses = JSON.parse(sessionStorage.getItem("expenses"));
+  document.getElementById("set-limit-section").classList.add("hidden");
+  document.getElementById("calendar-section").classList.remove("hidden");
+  generateCalendar();
+}
+
+document.getElementById("set-limit-button").addEventListener("click", () => {
+  const limitInput = document.getElementById("limit-input").value;
+  setLimit = parseFloat(limitInput);
+
+  if (isNaN(setLimit) || setLimit <= 0) {
+    alert("Please enter a valid limit.");
+    return;
+  }
+
+  // Save data in sessionStorage
+  sessionStorage.setItem("setLimit", setLimit);
+  sessionStorage.setItem("expenses", JSON.stringify(expenses));
+
+  document.getElementById("set-limit-section").classList.add("hidden");
+  document.getElementById("calendar-section").classList.remove("hidden");
+
+  generateCalendar();
+});
+
+function generateCalendar() {
+  const calendarContainer = document.getElementById("calendar-container");
+  calendarContainer.innerHTML = "";
+
+  months.forEach((month, monthIndex) => {
+    const monthDiv = document.createElement("div");
+    monthDiv.classList.add("month");
+
+    const totalExpenses = calculateTotalExpenses(monthIndex);
+    const remainingBalance = setLimit - totalExpenses;
+
+    monthDiv.innerHTML = `
+      <h3>${month.name}</h3>
+      <div class="days">${generateDays(monthIndex)}</div>
+      <div class="total">
+        <p>Amount Spent: ₹${totalExpenses}</p>
+        <p>Remaining Balance: ₹${remainingBalance}</p>
+      </div>
+    `;
+    calendarContainer.appendChild(monthDiv);
+  });
+}
+
+function generateDays(monthIndex) {
+  const daysInMonth = months[monthIndex].days;
+  const firstDayOfMonth = new Date(2025, monthIndex, 1).getDay();
+  const days = [];
+  for (let i = 0; i < firstDayOfMonth; i++) {
+    days.push("<button class='hidden'></button>");
+  }
+  for (let i = 1; i <= daysInMonth; i++) {
+    days.push(`<button data-month="${monthIndex}" data-day="${i}" onclick="showExpensePopup(${monthIndex}, ${i})">${i}</button>`);
+  }
+  return days.join("");
+}
+
+function showExpensePopup(monthIndex, day) {
+  const popup = document.getElementById("expense-popup");
+  popup.classList.add("show");
+
+  document.getElementById("submit-expense").onclick = () => {
+    const reason = document.getElementById("expense-reason").value;
+    const amount = parseFloat(document.getElementById("expense-amount").value);
+    if (isNaN(amount) || amount <= 0) {
+      alert("Please enter a valid expense amount.");
+      return;
+    }
+
+    if (!expenses[monthIndex]) expenses[monthIndex] = {};
+    expenses[monthIndex][day] = { reason, amount };
+
+    // Save updated expenses in sessionStorage
+    sessionStorage.setItem("expenses", JSON.stringify(expenses));
+
+    popup.classList.remove("show");
+    alert(`Expense of ₹${amount} added on ${months[monthIndex].name} ${day}`);
+    generateCalendar(); // Update the calendar after adding the expense
+  };
+
+  document.getElementById("close-popup").onclick = () => {
+    popup.classList.remove("show");
+  };
+}
+
+function calculateTotalExpenses(monthIndex) {
+  return Object.values(expenses[monthIndex] || {}).reduce((sum, expense) => sum + expense.amount, 0);
+}
+
+document.getElementById("admin-access-button").addEventListener("click", () => {
+  const enteredCode = document.getElementById("admin-code").value;
+  if (enteredCode === adminCode) {
+    document.getElementById("calendar-section").classList.add("hidden");
+    document.getElementById("admin-dashboard").classList.remove("hidden");
+    generateAdminDashboard();
+  } else {
+    alert("Invalid Admin Code");
+  }
+});
+
+function generateAdminDashboard() {
+  const adminTableContainer = document.getElementById("admin-table-container");
+  adminTableContainer.innerHTML = "";
+
+  months.forEach((month, monthIndex) => {
+    const table = document.createElement("table");
+    let tableContent = `
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Reason</th>
+          <th>Amount</th>
+          <th>Limit</th>
+          <th>Remaining Balance</th>
+        </tr>
+      </thead>
+      <tbody>
+    `;
+    for (let day = 1; day <= month.days; day++) {
+      const expense = expenses[monthIndex] && expenses[monthIndex][day];
+      const amount = expense ? expense.amount : 0;
+      tableContent += `
+        <tr>
+          <td>${day}</td>
+          <td>${expense ? expense.reason : ""}</td>
+          <td>${amount ? "₹" + amount : ""}</td>
+          <td>₹${setLimit}</td>
+          <td>₹${setLimit - amount}</td>
+        </tr>
+      `;
+    }
+    tableContent += "</tbody>";
+    table.innerHTML = tableContent;
+    adminTableContainer.appendChild(table);
+  });
+}
+  </script>
+</body>
+</html>
